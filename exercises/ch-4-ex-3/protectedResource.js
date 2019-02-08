@@ -73,8 +73,16 @@ app.get('/produce', getAccessToken, requireAccessToken, function (req, res) {
   produce.veggies = ['lettuce', 'onion', 'potato']
   produce.meats = ['bacon', 'steak', 'chicken breast']
 
-  
-
+  var produce = {fruit: [], veggies: [], meats: []}
+  if (__.contains(req.access_token.scope, 'fruit')) {
+    produce.fruit = ['apple', 'banana', 'kiwi']
+  }
+  if (__.contains(req.access_token.scope, 'veggies')) {
+    produce.veggies = ['lettuce', 'onion', 'potato']
+  }
+  if (__.contains(req.access_token.scope, 'meats')) {
+    produce.meats = ['bacon', 'steak', 'chicken breast']
+  }
 })
 
 var server = app.listen(9002, 'localhost', function () {
