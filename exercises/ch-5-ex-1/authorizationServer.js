@@ -62,13 +62,13 @@ app.get('/authorize', function (req, res) {
   } else if (!__.contains(client.redirect_uris, req.query.redirect_uri)) {
     res.render('error', {error: 'Invalid redirect URI'})
     return
-  }else {
-    var reqid = randomstring.generate(8);
+  } else {
+    var reqid = randomstring.generate(8)
 
-    requests[reqid] = req.query;
+    requests[reqid] = req.query
 
-    res.render('approve', {client: client, reqid: reqid });
-    return;
+    res.render('approve', {client: client, reqid: reqid})
+    return
   }
 
 })
@@ -78,8 +78,6 @@ app.post('/approve', function (req, res) {
   /*
    * Process the results of the approval page, authorize the client
    */
-
-
 
 })
 
