@@ -153,6 +153,29 @@ app.post('/token', function (req, res) {
     return
   }
 
+  if (req.body.grant_type == 'authorization_code') {
+    var code = codes[req.body.code]
+    if (code) {
+      delete codes[req.body.code]
+      if (code.request.client_id == clientId) {
+        var access_token = randomstring.generate()
+        nosql.insert({access_token: access_token, client_id: clientId})
+        var token_response = {access_token: access_token, token_type: 'Bearer'}
+        res.status(200).json(token_response)
+        
+      } else {
+        res.status(400).json({error: 'invalid_grant'})
+        return
+      }
+    } else {
+      res.status(400).json({error: 'invalid_grant'})
+      return
+    }
+  } else {
+    res.status(400).json({error: 'unsupported_grant_type'})
+    return
+  }
+
 })
 
 var buildUrl = function (base, options, hash) {
