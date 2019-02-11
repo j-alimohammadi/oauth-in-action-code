@@ -119,6 +119,39 @@ app.post('/token', function (req, res) {
   /*
    * Process the request, issue an access token
    */
+  var auth = req.headers['authorization']
+  if (auth) {
+    // check the auth header
+    var clientCredentials = decodeClientCredentials(auth)
+    var clientId = clientCredentials.id
+    var clientSecret = clientCredentials.secret
+  }
+
+  // otherwise, check the post body
+  if (req.body.client_id) {
+    if (clientId) {
+      // if we've already seen the client's credentials in the authorization header, this is an error
+      console.log('Client attempted to authenticate with multiple methods')
+      res.status(401).json({error: 'invalid_client'})
+      return
+    }
+
+    var clientId = req.body.client_id
+    var clientSecret = req.body.client_secret
+  }
+
+  var client = getClient(clientId)
+  if (!client) {
+    console.log('Unknown client %s', clientId)
+    res.status(401).json({error: 'invalid_client'})
+    return
+  }
+
+  if (client.client_secret != clientSecret) {
+    console.log('Mismatched client secret, expected %s got %s', client.client_secret, clientSecret)
+    res.status(401).json({error: 'invalid_client'})
+    return
+  }
 
 })
 
