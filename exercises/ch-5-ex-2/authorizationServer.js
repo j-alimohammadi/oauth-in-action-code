@@ -189,10 +189,36 @@ app.post('/token', function (req, res) {
       return
     }
 
-    /*
-       * Respond to a refresh token request by issuing a new access token
-     */
+  }
+  /*
+   * Respond to a refresh token request by issuing a new access token
+   */
+  else if (req.body.grant_type == 'refresh_token') {
+    nosql.one(function (token) {
+      if (token.refresh_token == req.body.refresh_token) {
+        return token
+      }
+    }, function (err, token) {
+      if (token) {
+        if (token.client_id != clientId) {
+          nosql.remove(function (found) { return (found == token) }, function () {})
+          res.status(400).json({error: 'invalid_grant'})
+          return
+        }
 
+        var access_token = randomstring.generate()
+        nosql.insert({access_token: access_token, client_id: clientId})
+        var token_response = {
+          access_token: access_token, token_type: 'Bearer',
+          refresh_token: token.refresh_token
+        }
+        res.status(200).json(token_response)
+
+      } else {
+        res.status(400).json({error: 'invalid_grant'})
+        return
+      }
+    })
   } else {
     console.log('Unknown grant type %s', req.body.grant_type)
     res.status(400).json({error: 'unsupported_grant_type'})
