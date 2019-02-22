@@ -56,16 +56,30 @@ app.get('/authorize', function (req, res) {
     grant_type: 'client_credentials',
     scope: client.scope
   })
+
   var headers = {
     'Content-Type': 'application/x-www-form-urlencoded',
     'Authorization': 'Basic ' + encodeClientCredentials(client.client_id,
       client.client_secret)
   }
+
   var tokRes = request('POST', authServer.tokenEndpoint, {
     body: form_data,
     headers: headers
   })
 
+  if (tokRes.statusCode >= 200 && tokRes.statusCode < 300) {
+    var body = JSON.parse(tokRes.getBody())
+    access_token = body.access_token
+    scope = body.scope
+    res.render('index', {access_token: access_token, scope: scope})
+  } else {
+    res.render('error', {
+        error: 'Unable to fetch access token, server',
+        response: ' + tokRes.statusCode})'
+      }
+    )
+  }
 })
 
 app.get('/fetch_resource', function (req, res) {
