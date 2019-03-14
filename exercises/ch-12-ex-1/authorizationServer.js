@@ -261,6 +261,50 @@ app.post('/register', function (req, res) {
     return
   }
 
+  // read the grant_type and response_type
+  if (!req.body.grant_types) {
+    if (!req.body.response_types) {
+      reg.grant_types = ['authorization_code']
+      reg.response_types = ['code']
+    } else {
+      reg.response_types = req.body.response_types
+      if (__.contains(req.body.response_types, 'code')) {
+        reg.grant_types = ['authorization_code']
+      } else {
+        reg.grant_types = []
+      }
+    }
+  } else {
+    if (!req.body.response_types) {
+      reg.grant_types = req.body.grant_types
+      if (__.contains(req.body.grant_types, 'authorization_code')) {
+        reg.response_types = ['code']
+      } else {
+        reg.response_types = []
+      }
+    } else {
+      reg.grant_types = req.body.grant_types
+      reg.reponse_types = req.body.response_types
+      if (__.contains(req.body.grant_types, 'authorization_code') && !__.contains(req.body.response_types, 'code')) {
+        reg.response_types.push('code')
+      }
+      if (!__.contains(req.body.grant_types, 'authorization_code') &&
+        __.contains(req.body.response_types, 'code')) {
+        reg.grant_types.push('authorization_code')
+      }
+    }
+  }
+
+  if (!__.isEmpty(__.without(reg.grant_types, 'authorization_code',
+    'refresh_token')) ||
+    !__.isEmpty(__.without(reg.response_types, 'code'))) {
+    res.status(400).json({error: 'invalid_client_metadata'})
+    return
+  }
+
+
+
+
 })
 
 var buildUrl = function (base, options, hash) {
